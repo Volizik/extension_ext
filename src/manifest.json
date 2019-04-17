@@ -1,0 +1,28 @@
+{
+  "name": "AnSpy",
+  "description": "AntiSpy web extension",
+  "version": "0.1",
+  "manifest_version": 2,
+  "icons": {
+    "48": "icons/icon_48.png",
+    "128": "icons/icon_128.png"
+  },
+  "browser_action": {
+    "default_title": "AnSpy",
+    "default_popup": "popup/popup.html",
+    "default_icon": "icons/icon_128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content_script.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "permissions": ["<all_urls>", "storage", "webRequest", "webRequestBlocking", "proxy"]
+}
