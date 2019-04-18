@@ -11,7 +11,7 @@ chrome.storage.onChanged.addListener(changes => {
 });
 
 function init() {
-    // setProxy();
+    setProxy();
     setHeaders();
 }
 

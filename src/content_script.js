@@ -190,17 +190,17 @@ const init = function (data) {
         return Object.assign(resolvedOptionsResult, resolvedOptionsData);
     };
 
+
     const timezoneOffset = Date.prototype.getTimezoneOffset;
     Date.prototype.getTimezoneOffset = function () {
         return Number(data.timezone.timezoneOffset);
     };
-
-    const date = Date.prototype.constructor;
-    Date.prototype.constructor = function () {
-       return ''
+    let date = new Date().toString();
+    Date.prototype.toString = function () {
+        const gmt = ("0"+-~((Number(data.timezone.timezoneOffset) / 60 * -1) - 1)).substr(-2,2);
+        date = date.substring(0, date.indexOf('GMT')) + "GMT" + (Number(gmt) > 0 ? '+' + gmt: gmt) + '00';
+        return date
     };
-
-
 
     // IF IS FIREFOX
     if (data.browser === 'mozilla') {
@@ -210,4 +210,4 @@ const init = function (data) {
             }
         };
     }
-};
+}

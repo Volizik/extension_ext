@@ -48,9 +48,9 @@
                         proxy: {
                             username: 'user15633',
                             password: 'kwdtxq',
-                            ip: '91.207.238.107',
-                            protocol: 'socks4',
-                            port: '40019'
+                            ip: '178.62.241.136',
+                            protocol: 'http',
+                            port: '8080'
                         },
                         webgl: {
                             unmasked_vendor: 'Google Inc.',
@@ -77,7 +77,7 @@
                             deviceMemory: 12, // Оперативка
                             platform: 'Win32', // Операционка
                             userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36',
-                            appVersion: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36', // должен совпадать с юзерагентом
+                            appVersion: '5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36', // должен совпадать с юзерагентом
                             vendor: 'Google Inc.', // "Google Inc.", "Apple Computer, Inc.", or (in Firefox) the empty string.
                             language: 'fr',
                             languages: ['fr', 'en-US', 'en'],
