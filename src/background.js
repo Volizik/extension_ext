@@ -21,9 +21,10 @@ function setHeaders() {
         (details) => {
             for (let i = 0; i < details.requestHeaders.length; i++) {
                 if (details.requestHeaders[i].name === 'User-Agent') {
-                    details.requestHeaders[i].value = data.navigator.userAgent;
+                    details.requestHeaders[i].value = data.useragent;
                 } else if (details.requestHeaders[i].name === 'Accept-Language') {
-                    details.requestHeaders[i].value = data.navigator.headerLanguages;
+                    console.log(adaptiveLanguageListForHeaders(data.languages));
+                    details.requestHeaders[i].value = adaptiveLanguageListForHeaders(data.languages);
                 }
                 console.log(details.requestHeaders)
             }
@@ -35,7 +36,7 @@ function setHeaders() {
 }
 function setProxy() {
     chrome.webRequest.onAuthRequired.addListener((details, callbackFn) => {
-            callbackFn({ authCredentials: {username: data.proxy.username, password: data.proxy.password}});
+            callbackFn({ authCredentials: {username: data.proxy.login, password: data.proxy.password}});
         },
         {urls: ["<all_urls>"]},
         ['asyncBlocking']
@@ -53,6 +54,19 @@ function setProxy() {
     };
     chrome.proxy.settings.set({value: config, scope: 'regular'}, function() {});
     chrome.proxy.settings.get({'incognito': false}, function(config) {console.log('proxy config -->', config);});
+}
+
+function adaptiveLanguageListForHeaders(langArr) {
+    // 'de-AU,de;q=0.9,en-US;q=0.8,en;'
+    let counter = 9;
+    const str = langArr.map((lang, index, arr) => {
+        console.log(index, arr.length - 1);
+        if (index !== arr.length - 1) {
+            return lang.dialect + ',' + lang.language + `;q=0.${counter--}`
+        }
+        return lang.dialect + ',' + lang.language + ';'
+    }).join();
+    return str
 }
 
 

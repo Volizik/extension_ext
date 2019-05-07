@@ -1,6 +1,7 @@
 let data = {};
 
 chrome.storage.sync.get(['currentComputerData'], result => {
+    console.log(result)
     if ('currentComputerData' in result) {
         data = result.currentComputerData;
         console.log('currentComputerData', data);
@@ -9,6 +10,7 @@ chrome.storage.sync.get(['currentComputerData'], result => {
 });
 
 chrome.storage.onChanged.addListener(changes => {
+    console.log(changes)
     if ('currentComputerData' in changes) {
         data = changes.currentComputerData.newValue;
         console.log('computerData is changed', data);
@@ -27,7 +29,8 @@ function appendScript() {
 }
 
 const init = function (data) {
-    'use strict';
+
+    console.log(data)
 
     const defaultData = {
         width: window.innerWidth + 'px',
@@ -38,25 +41,25 @@ const init = function (data) {
     // Navigator
     Object.defineProperties(modifiedNavigator, {
         userAgent: {
-            value: data.navigator.userAgent
+            value: data.useragent
         },
         vendor: {
-          value: data.navigator.vendor
+          value: data.browser.name === 'chrome' ? 'Google Inc.' : '' // empty string for firefox
         },
         appVersion: {
-            value: data.navigator.appVersion
+            value: data.useragent.replace('Mozilla/', '')
         },
         platform: {
-            value: data.navigator.platform
+            value: 'Win32'
         },
         hardwareConcurrency: {
-            value: data.navigator.hardwareConcurrency
+            value: data.hardwareConcurrency.value
         },
         deviceMemory: {
-            value: data.navigator.deviceMemory
+            value: data.memory.value
         },
-        language: { value: data.navigator.language },
-        languages: { value: data.navigator.languages },
+        language: { value: data.language[0] },  // TODO: Add timezone lang
+        languages: { value: data.languages.map(lang => lang.dialect) },  // TODO: Add timezone lang first
     });
 
 
@@ -64,22 +67,22 @@ const init = function (data) {
     Object.defineProperties(screen, {
         width: {value: data.screen.width},
         height: {value: data.screen.height},
-        availTop: {value: data.screen.availTop},
-        availLeft: {value: data.screen.availLeft},
-        availWidth: {value: data.screen.availWidth},
-        availHeight: {value: data.screen.availHeight},
+        availTop: {value: 0},
+        availLeft: {value: 0},
+        availWidth: {value: data.screen.width},
+        availHeight: {value: data.screen.height},
     });
     Object.defineProperties(window, {
-        innerHeight: {value: data.window.innerHeight},
-        innerWidth: {value: data.window.innerWidth},
-        outerHeight: {value: data.window.outerHeight},
-        outerWidth: {value: data.window.outerWidth},
-        screenTop: {value: data.window.screenTop},
-        screenLeft: {value: data.window.screenLeft},
+        innerHeight: {value: data.screen.height},
+        innerWidth: {value: data.screen.width},
+        outerHeight: {value: data.screen.height},
+        outerWidth: {value: data.screen.width},
+        screenTop: {value: 0},
+        screenLeft: {value: 0},
     });
     Object.defineProperties(visualViewport, {
-        height: {value: data.window.innerHeight},
-        width: {value: data.window.innerWidth}
+        height: {value: data.screen.height},
+        width: {value: data.screen.width}
     });
     // Css properties
     const getComputedStyle = window.getComputedStyle;
@@ -87,16 +90,16 @@ const init = function (data) {
         let result = getComputedStyle.call(this, ...arguments);
         Object.defineProperties(result, {
             height: {
-                get() {return data.window.innerHeight + 'px'}
+                get() {return data.screen.height + 'px'}
             },
             width: {
-                get() {return data.window.innerWidth + 'px'}
+                get() {return data.screen.width + 'px'}
             },
             webkitLogicalHeight: {
-                get() {return data.window.innerHeight + 'px'}
+                get() {return data.screen.height + 'px'}
             },
             webkitLogicalWidth: {
-                get() {return data.window.innerWidth + 'px'}
+                get() {return data.screen.width + 'px'}
             }
         });
         return result;
@@ -105,24 +108,24 @@ const init = function (data) {
     CSSStyleDeclaration.prototype.getPropertyValue = function (prop) {
         let result = getPropertyValue.call(this, prop);
         if (prop === 'height' && defaultData.height === result) {
-            return data.window.innerHeight
+            return data.screen.height
         } else if (prop === 'width' && defaultData.width === result) {
-            return data.window.innerWidth
+            return data.screen.width
         }
         return getPropertyValue.call(this, prop);
     };
     Object.defineProperties(HTMLElement.prototype, {
         // offsetHeight: {
-        //     value: data.window.innerHeight
+        //     value: data.screen.height
         // },
         // offsetWidth: {
-        //     value: data.window.innerWidth
+        //     value: data.screen.width
         // },
         clientHeight: {
-            value: data.window.innerHeight
+            value: data.screen.height
         },
         clientWidth: {
-            value: data.window.innerWidth
+            value: data.screen.width
         }
     });
 
@@ -143,6 +146,15 @@ const init = function (data) {
         if (parameter === 37446) {
             return data.webgl.unmasked_renderer;
         }
+        // VENDOR
+        if (parameter === 7936) {
+            return data.browser.name === 'chrome' ? 'WebKit' : 'Mozilla';
+        }
+        // RENDERER
+        if (parameter === 7937) {
+            return data.browser.name === 'chrome' ? 'WebKit WebGL' : 'Mozilla';
+        }
+
 
         return getParameterWebGL.call(this, parameter);
     };
@@ -155,6 +167,14 @@ const init = function (data) {
         if (parameter === 37446) {
             return data.webgl.unmasked_renderer;
         }
+        // VENDOR
+        if (parameter === 7936) {
+            return data.browser.name === 'chrome' ? 'WebKit' : 'Mozilla';
+        }
+        // RENDERER
+        if (parameter === 7937) {
+            return data.browser.name === 'chrome' ? 'WebKit WebGL' : 'Mozilla';
+        }
 
         return getParameterWebGL2.call(this, parameter);
     };
@@ -162,11 +182,11 @@ const init = function (data) {
     const bufferDataWebGL = WebGLRenderingContext.prototype.bufferData;
     const bufferDataWebGL2 = WebGL2RenderingContext.prototype.bufferData;
     WebGLRenderingContext.prototype.bufferData = function () {
-        arguments[1] = arguments[1].map(num => num + Number(data.webgl.salt));
+        arguments[1] = arguments[1].map(num => num + Number(data.webglSalt));
         return bufferDataWebGL.call(this, ...arguments);
     };
     WebGL2RenderingContext.prototype.bufferData = function () {
-        arguments[1] = arguments[1].map(num => num + Number(data.webgl.salt));
+        arguments[1] = arguments[1].map(num => num + Number(data.webglSalt));
         return bufferDataWebGL2.call(this, ...arguments);
     };
 
@@ -180,12 +200,11 @@ const init = function (data) {
 
 
     // Timezone
-    // const resolvedOptions = Intl.DateTimeFormat.prototype.resolvedOptions;
     const resolvedOptionsResult = Intl.DateTimeFormat().resolvedOptions();
     Intl.DateTimeFormat.prototype.resolvedOptions = function () {
         const resolvedOptionsData = {
             locale: data.timezone.locale,
-            timeZone: data.timezone.timezone
+            timeZone: data.language
         };
         return Object.assign(resolvedOptionsResult, resolvedOptionsData);
     };
@@ -193,21 +212,21 @@ const init = function (data) {
 
     const timezoneOffset = Date.prototype.getTimezoneOffset;
     Date.prototype.getTimezoneOffset = function () {
-        return Number(data.timezone.timezoneOffset);
+        return Number(data.timezone.utcOffset);
     };
     let date = new Date().toString();
     Date.prototype.toString = function () {
-        const gmt = ("0"+-~((Number(data.timezone.timezoneOffset) / 60 * -1) - 1)).substr(-2,2);
+        const gmt = ("0"+-~((Number(data.timezone.utcOffset) / 60 * -1) - 1)).substr(-2,2);
         date = date.substring(0, date.indexOf('GMT')) + "GMT" + (Number(gmt) > 0 ? '+' + gmt: gmt) + '00';
         return date
     };
 
     // IF IS FIREFOX
-    if (data.browser === 'mozilla') {
+    if (data.browser.name === 'firefox') {
         window.InstallTrigger = {
             install: function (InstallXPI) {
                 console.log('i am firefox', InstallXPI)
             }
         };
     }
-}
+};
