@@ -199,26 +199,24 @@ const init = function (data) {
     };
 
 
-    // Timezone
+    //Timezone
     const resolvedOptionsResult = Intl.DateTimeFormat().resolvedOptions();
     Intl.DateTimeFormat.prototype.resolvedOptions = function () {
         const resolvedOptionsData = {
-            locale: data.timezone.locale,
-            timeZone: data.language
+            timeZone: data.timezone.name,
+            locale: data.language[0]
         };
         return Object.assign(resolvedOptionsResult, resolvedOptionsData);
     };
 
 
+    console.log('------>', data)
     const timezoneOffset = Date.prototype.getTimezoneOffset;
     Date.prototype.getTimezoneOffset = function () {
         return Number(data.timezone.utcOffset);
     };
-    let date = new Date().toString();
     Date.prototype.toString = function () {
-        const gmt = ("0"+-~((Number(data.timezone.utcOffset) / 60 * -1) - 1)).substr(-2,2);
-        date = date.substring(0, date.indexOf('GMT')) + "GMT" + (Number(gmt) > 0 ? '+' + gmt: gmt) + '00';
-        return date
+        return data.timezone.date
     };
 
     // IF IS FIREFOX
