@@ -24,5 +24,6 @@
       "background.js"
     ]
   },
-  "permissions": ["<all_urls>", "storage", "webRequest", "webRequestBlocking", "proxy"]
+  "permissions": ["<all_urls>", "storage", "webRequest", "webRequestBlocking", "proxy"],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

@@ -1,36 +1,56 @@
-let data = {};
-
-chrome.storage.sync.get(['currentComputerData'], result => {
-    console.log(result)
-    if ('currentComputerData' in result) {
-        data = result.currentComputerData;
-        console.log('currentComputerData', data);
-        appendScript();
+const data = {
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36.0 (KHTML, like Gecko) Chrome/73.0.3683.0 Safari/537.36.0',
+    browserName: 'chrome',
+    platform: 'Win32',
+    hardwareConcurrency: 4,
+    deviceMemory: 12,
+    language: 'be',
+    languages: ["be", "ru", "en-US", "en", "it"],
+    languagesHeader: 'be;q=0.9,ru;q=0.8,en-US;q=0.7,en;q=0.6,it;q=0.5',
+    doNotTrack: "0",
+    screen: {
+        width: 1024,
+        height: 768,
+    },
+    webGL: {
+        unmaskedVendor: 'X.Org',
+        unmaskedRenderer: 'AMD SUMO (DRM 2.50.0 / 4.13.0-45-generic, LLVM 6.0.0)',
+        salt: 0.001
+    },
+    canvas: {
+        salt: 'q',
+    },
+    timezone: {
+        name: 'Europe/Minsk',
+        utcOffset: -180
+    },
+    proxy: {
+        login: '',
+        password: '',
+        host: '',
+        port: '',
+        protocol: ''
     }
+};
+
+chrome.storage.sync.set({
+    currentComputerData: data,
 });
-
-chrome.storage.onChanged.addListener(changes => {
-    console.log(changes)
-    if ('currentComputerData' in changes) {
-        data = changes.currentComputerData.newValue;
-        console.log('computerData is changed', data);
-    }
-});
-
-
 
 function appendScript() {
     const initialization = '' + init;
     const scriptData = '(' + initialization + ')(' + JSON.stringify(data) + ')';
     const script = document.createElement('script');
     script.innerHTML = scriptData;
-    document.head.insertBefore(script, document.head.firstChild);
-    script.remove();
+    setTimeout(() => {
+        document.head.insertBefore(script, document.head.firstChild);
+        script.remove();
+    }, 0)
 }
 
 const init = function (data) {
 
-    console.log(data)
+    console.log(data);
 
     const defaultData = {
         width: window.innerWidth + 'px',
@@ -41,25 +61,26 @@ const init = function (data) {
     // Navigator
     Object.defineProperties(modifiedNavigator, {
         userAgent: {
-            value: data.useragent
+            value: data.userAgent
         },
         vendor: {
-          value: data.browser.name === 'chrome' ? 'Google Inc.' : '' // empty string for firefox
+          value: data.browserName === 'chrome' ? 'Google Inc.' : '' // empty string for firefox
         },
         appVersion: {
-            value: data.useragent.replace('Mozilla/', '')
+            value: data.userAgent.replace('Mozilla/', '')
         },
         platform: {
-            value: 'Win32'
+            value: data.platform
         },
         hardwareConcurrency: {
-            value: data.hardwareConcurrency.value
+            value: data.hardwareConcurrency
         },
         deviceMemory: {
-            value: data.memory.value
+            value: data.deviceMemory
         },
-        language: { value: data.language[0] },  // TODO: Add timezone lang
-        languages: { value: data.languages.map(lang => lang.dialect) },  // TODO: Add timezone lang first
+        language: { value: data.language },
+        languages: { value: data.languages },
+        doNotTrack: { value: data.doNotTrack },
     });
 
 
@@ -140,19 +161,19 @@ const init = function (data) {
     WebGLRenderingContext.prototype.getParameter = function(parameter) {
         // UNMASKED_VENDOR_WEBGL
         if (parameter === 37445) {
-            return data.webgl.unmasked_vendor;
+            return data.webGL.unmaskedVendor;
         }
         // UNMASKED_RENDERER_WEBGL
         if (parameter === 37446) {
-            return data.webgl.unmasked_renderer;
+            return data.webGL.unmaskedRenderer;
         }
         // VENDOR
         if (parameter === 7936) {
-            return data.browser.name === 'chrome' ? 'WebKit' : 'Mozilla';
+            return data.browserName === 'chrome' ? 'WebKit' : 'Mozilla';
         }
         // RENDERER
         if (parameter === 7937) {
-            return data.browser.name === 'chrome' ? 'WebKit WebGL' : 'Mozilla';
+            return data.browserName === 'chrome' ? 'WebKit WebGL' : 'Mozilla';
         }
 
 
@@ -161,19 +182,19 @@ const init = function (data) {
     WebGL2RenderingContext.prototype.getParameter = function(parameter) {
         // UNMASKED_VENDOR_WEBGL
         if (parameter === 37445) {
-            return data.webgl.unmasked_vendor;
+            return data.webGL.unmaskedVendor;
         }
         // UNMASKED_RENDERER_WEBGL
         if (parameter === 37446) {
-            return data.webgl.unmasked_renderer;
+            return data.webGL.unmaskedRenderer;
         }
         // VENDOR
         if (parameter === 7936) {
-            return data.browser.name === 'chrome' ? 'WebKit' : 'Mozilla';
+            return data.browserName === 'chrome' ? 'WebKit' : 'Mozilla';
         }
         // RENDERER
         if (parameter === 7937) {
-            return data.browser.name === 'chrome' ? 'WebKit WebGL' : 'Mozilla';
+            return data.browserName === 'chrome' ? 'WebKit WebGL' : 'Mozilla';
         }
 
         return getParameterWebGL2.call(this, parameter);
@@ -182,11 +203,11 @@ const init = function (data) {
     const bufferDataWebGL = WebGLRenderingContext.prototype.bufferData;
     const bufferDataWebGL2 = WebGL2RenderingContext.prototype.bufferData;
     WebGLRenderingContext.prototype.bufferData = function () {
-        arguments[1] = arguments[1].map(num => num + Number(data.webglSalt));
+        arguments[1] = arguments[1].map(num => num + Number(data.webGL.salt));
         return bufferDataWebGL.call(this, ...arguments);
     };
     WebGL2RenderingContext.prototype.bufferData = function () {
-        arguments[1] = arguments[1].map(num => num + Number(data.webglSalt));
+        arguments[1] = arguments[1].map(num => num + Number(data.webGL.salt));
         return bufferDataWebGL2.call(this, ...arguments);
     };
 
@@ -204,23 +225,21 @@ const init = function (data) {
     Intl.DateTimeFormat.prototype.resolvedOptions = function () {
         const resolvedOptionsData = {
             timeZone: data.timezone.name,
-            locale: data.language[0]
+            locale: data.language
         };
         return Object.assign(resolvedOptionsResult, resolvedOptionsData);
     };
 
-
-    console.log('------>', data)
     const timezoneOffset = Date.prototype.getTimezoneOffset;
     Date.prototype.getTimezoneOffset = function () {
         return Number(data.timezone.utcOffset);
     };
-    Date.prototype.toString = function () {
-        return data.timezone.date
-    };
+    // Date.prototype.toString = function () {
+    //     return data.timezone.date
+    // };
 
     // IF IS FIREFOX
-    if (data.browser.name === 'firefox') {
+    if (data.browserName === 'firefox') {
         window.InstallTrigger = {
             install: function (InstallXPI) {
                 console.log('i am firefox', InstallXPI)
@@ -228,3 +247,6 @@ const init = function (data) {
         };
     }
 };
+
+
+appendScript();
