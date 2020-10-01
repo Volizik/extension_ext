@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
+const CreateFilePlugin = require('./webpack-create-file-plugin');
 
 const mode = process.env.NODE_ENV || 'development';
 
@@ -18,10 +19,9 @@ module.exports = {
             patterns: [
                 { from: './src/icons', to: './icons/' },
                 { from: './manifest.json', to: './manifest.json' },
-                { from: './background.js', to: './background.js' },
-                { from: './content.js', to: './content.js' },
             ],
         }),
+        new CreateFilePlugin(['content', 'background']),
     ],
     module: {
         rules: [
