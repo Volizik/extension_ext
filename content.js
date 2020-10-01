@@ -2,6 +2,6 @@
 
 const script = document.createElement('script');
 script.setAttribute("type", "module");
-script.setAttribute("src", chrome.extension.getURL('background.bundle.js'));
+script.setAttribute("src", chrome.extension.getURL('content.bundle.js'));
 const head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
 head.insertBefore(script, head.firstChild);

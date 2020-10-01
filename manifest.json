@@ -4,26 +4,28 @@
   "version": "0.1",
   "manifest_version": 2,
   "icons": {
-    "48": "icons/icon_48.png",
-    "128": "icons/icon_128.png"
+    "48": "./icons/icon_48.png",
+    "128": "./icons/icon_128.png"
   },
   "browser_action": {
-    "default_title": "AnSpy",
-    "default_popup": "popup/popup.html",
-    "default_icon": "icons/icon_128.png"
+    "default_title": "AnSpy"
   },
   "content_scripts": [
     {
       "matches": ["*://*/*"],
-      "js": ["content_script.js"],
+      "js": ["./content.js"],
       "run_at": "document_start"
     }
   ],
   "background": {
     "scripts": [
-      "background.js"
+      "./background.js"
     ]
   },
+  "web_accessible_resources": [
+    "content.bundle.js",
+    "background.bundle.js"
+  ],
   "permissions": ["<all_urls>", "storage", "webRequest", "webRequestBlocking", "proxy"],
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }
