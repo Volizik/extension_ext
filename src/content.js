@@ -4,8 +4,8 @@ function appendScript() {
     const scriptString = `(${init.toString()})(${JSON.stringify(data)})`;
     const script = document.createElement('script');
     script.innerHTML = scriptString;
+    document.head.insertBefore(script, document.head.firstChild);
     setTimeout(() => {
-        document.head.insertBefore(script, document.head.firstChild);
         script.remove();
     }, 0)
 }
@@ -209,6 +209,5 @@ const init = function (data) {
         };
     }
 };
-
 
 appendScript();

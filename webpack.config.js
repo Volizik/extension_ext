@@ -1,17 +1,18 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 
+const mode = process.env.NODE_ENV || 'development';
+
 module.exports = {
     entry: {
         content: './src/content.js',
         background: './src/background.js',
     },
-    // mode: "development",
-    // devtool: "source-map",
     output: {
         filename: '[name].bundle.js',
         path: path.resolve(__dirname, 'dist'),
     },
+    mode,
     plugins: [
         new CopyPlugin({
             patterns: [

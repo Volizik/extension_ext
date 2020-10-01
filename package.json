@@ -5,7 +5,8 @@
   "author": "Volizik <kizilov.yura@gmail.com>",
   "private": true,
   "scripts": {
-    "build": "rm -rf ./dist && webpack"
+    "build": "rm -rf ./dist && NODE_ENV=production webpack",
+    "build:dev": "rm -rf ./dist && NODE_ENV=development webpack"
   },
   "dependencies": {},
   "devDependencies": {
